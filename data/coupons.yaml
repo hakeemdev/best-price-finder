@@ -1,0 +1,45 @@
+# Seed coupon / promo data keyed by merchant key (lowercase alphanumerics of seller name).
+# This file is a starting point and a schema example; live coupon sources will replace it.
+# Fields: code, percent|amount|free_shipping, max, min_spend, expires (ISO date), confidence,
+#         requires (action the user must take), stackable, description, vertical.
+
+ebay:
+  - description: "eBay app first-purchase promo (varies)"
+    percent: 5
+    max: 25
+    confidence: 0.3
+    requires: "apply code in eBay app"
+bestbuy:
+  - description: "Best Buy open-box / outlet additional savings (varies)"
+    percent: 0
+    confidence: 0.1
+hertz:
+  - description: "AAA member rate"
+    percent: 10
+    confidence: 0.5
+    requires: "AAA membership"
+    vertical: car_rental
+avis:
+  - description: "Costco Travel / AWD code"
+    percent: 15
+    confidence: 0.5
+    requires: "Costco membership"
+    vertical: car_rental
+
+# New-customer / quick-signup offers, keyed by merchant.
+signup:
+  mock:
+    description: "Newsletter signup: 10% off first order"
+    percent: 10
+    max: 30
+    confidence: 0.8
+    requires: "subscribe to newsletter"
+  walmart:
+    description: "Walmart+ free trial: free shipping"
+    amount: 0
+    confidence: 0.5
+  hotelscom:
+    description: "One Key: ~2% back in OneKeyCash"
+    percent: 2
+    confidence: 0.7
+    requires: "create Hotels.com account"

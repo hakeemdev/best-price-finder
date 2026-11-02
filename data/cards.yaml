@@ -1,0 +1,82 @@
+# Credit card catalog used by savings.rewards. Rates are approximations and change often;
+# verify against issuer terms. `earn` keys are spend categories; see savings/rewards.py.
+# point_value_cents is a reasonable redemption value, not a guarantee.
+cards:
+  chase_sapphire_preferred:
+    name: Chase Sapphire Preferred
+    issuer: Chase
+    program: chase_ultimate_rewards
+    point_value_cents: 1.5
+    annual_fee: 95
+    signup_bonus_points: 60000
+    signup_bonus_min_spend: 4000
+    earn: { travel_portal: 5, travel: 2, dining: 3, online_shopping: 1, everything: 1 }
+  chase_sapphire_reserve:
+    name: Chase Sapphire Reserve
+    issuer: Chase
+    program: chase_ultimate_rewards
+    point_value_cents: 1.5
+    annual_fee: 550
+    signup_bonus_points: 60000
+    signup_bonus_min_spend: 4000
+    earn: { travel_portal: 10, airfare_direct: 4, hotels_direct: 4, travel: 3, dining: 3, everything: 1 }
+  amex_gold:
+    name: American Express Gold
+    issuer: American Express
+    program: amex_membership_rewards
+    point_value_cents: 1.4
+    annual_fee: 325
+    signup_bonus_points: 60000
+    signup_bonus_min_spend: 6000
+    earn: { dining: 4, airfare_direct: 3, travel_portal: 3, everything: 1 }
+  amex_platinum:
+    name: American Express Platinum
+    issuer: American Express
+    program: amex_membership_rewards
+    point_value_cents: 1.4
+    annual_fee: 695
+    signup_bonus_points: 80000
+    signup_bonus_min_spend: 8000
+    earn: { airfare_direct: 5, travel_portal: 5, everything: 1 }
+  capital_one_venture_x:
+    name: Capital One Venture X
+    issuer: Capital One
+    program: capital_one_miles
+    point_value_cents: 1.4
+    annual_fee: 395
+    signup_bonus_points: 75000
+    signup_bonus_min_spend: 4000
+    earn: { travel_portal: 10, hotels: 10, car_rental: 10, airfare: 5, everything: 2 }
+  citi_double_cash:
+    name: Citi Double Cash
+    issuer: Citi
+    program: citi_thankyou
+    is_cashback: true
+    earn: { everything: 2 }
+  amazon_prime_visa:
+    name: Amazon Prime Visa
+    issuer: Chase
+    program: amazon_rewards
+    is_cashback: true
+    earn: { everything: 1, dining: 2, travel: 2 }
+    merchant_bonus: { amazon: 5, wholefoods: 5, chase_travel: 5 }
+  costco_anywhere_visa:
+    name: Costco Anywhere Visa
+    issuer: Citi
+    program: costco_cashback
+    is_cashback: true
+    earn: { travel: 3, dining: 3, everything: 1 }
+    merchant_bonus: { costco: 2 }
+  bilt:
+    name: Bilt Mastercard
+    issuer: Wells Fargo
+    program: bilt_rewards
+    point_value_cents: 1.5
+    earn: { dining: 3, travel: 2, everything: 1 }
+  bestbuy_visa:
+    name: My Best Buy Visa
+    issuer: Citi
+    program: bestbuy_rewards
+    is_cashback: true
+    earn: { everything: 1 }
+    merchant_bonus: { bestbuy: 5 }

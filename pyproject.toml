@@ -1,0 +1,81 @@
+[project]
+name = "pricefinder"
+version = "0.1.0"
+description = "Hunt down the absolute best price for anything: goods, flights, hotels, rental cars, reservations, and more."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Hakeem Ali" }]
+keywords = ["price-comparison", "deals", "travel", "shopping", "coupons", "rewards"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: MIT License",
+  "Topic :: Internet :: WWW/HTTP",
+]
+dependencies = [
+  "pydantic>=2.7",
+  "pydantic-settings>=2.3",
+  "httpx>=0.27",
+  "typer>=0.12",
+  "rich>=13.7",
+  "sqlalchemy>=2.0",
+  "fastapi>=0.111",
+  "uvicorn>=0.30",
+  "pyyaml>=6.0",
+  "python-dateutil>=2.9",
+  "rapidfuzz>=3.9",
+]
+
+[project.optional-dependencies]
+browser = ["playwright>=1.45"]
+postgres = ["psycopg[binary]>=3.2"]
+llm = ["anthropic>=0.30"]
+
+[project.scripts]
+pf = "pricefinder.cli:app"
+
+[project.entry-points."pricefinder.providers"]
+mock = "pricefinder.providers.goods.mock:MockGoodsProvider"
+ebay = "pricefinder.providers.goods.ebay:EbayProvider"
+google_shopping = "pricefinder.providers.goods.google_shopping:GoogleShoppingProvider"
+google_flights = "pricefinder.providers.travel.flights:GoogleFlightsProvider"
+google_hotels = "pricefinder.providers.travel.hotels:GoogleHotelsProvider"
+car_rental = "pricefinder.providers.travel.car_rental:CarRentalProvider"
+facebook_marketplace = "pricefinder.providers.local.facebook_marketplace:FacebookMarketplaceProvider"
+craigslist = "pricefinder.providers.local.craigslist:CraigslistProvider"
+local_inventory = "pricefinder.providers.local.store_inventory:LocalStoreInventoryProvider"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.2",
+  "pytest-asyncio>=0.23",
+  "ruff>=0.5",
+  "mypy>=1.10",
+  "respx>=0.21",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pricefinder"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["B008"]  # typer.Option in defaults is the idiomatic typer style
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+ignore_missing_imports = true

@@ -1,0 +1,21 @@
+# Shopping portal rates (percent) by merchant key. Rates fluctuate; seed values only.
+portals:
+  rakuten:
+    ebay: 1
+    walmart: 1
+    bestbuy: 1
+    expedia: 4
+    hotelscom: 4
+    priceline: 3
+    avis: 2
+    hertz: 2
+  topcashback:
+    walmart: 2
+    bestbuy: 1
+    expedia: 5
+    hotelscom: 5
+    budget: 3
+    enterprise: 1
+  capital_one_shopping:
+    ebay: 2
+    walmart: 1

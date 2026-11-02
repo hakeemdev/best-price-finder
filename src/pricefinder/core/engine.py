@@ -11,7 +11,7 @@ from ..providers.base import Provider, ProviderContext
 from ..savings import SavingsSource, default_sources
 from ..storage.repository import Repository
 from .llm_parser import build_parser
-from .models import Offer, PricedOffer, Query, SearchResult, UserProfile
+from .models import Offer, PricedOffer, ProviderKind, Query, SearchResult, UserProfile
 from .normalize import dedupe, matches_query, product_key
 from .query import QueryParser
 from .ranking import Ranker
@@ -94,6 +94,9 @@ class SearchEngine:
             if p.kind.value != "local" and not query.include_online:
                 continue
             out.append(p)
+        # The mock provider is for demos and tests: drop it as soon as a real source is available.
+        if any(p.kind != ProviderKind.MOCK for p in out):
+            out = [p for p in out if p.kind != ProviderKind.MOCK]
         return out
 
     async def _fan_out(

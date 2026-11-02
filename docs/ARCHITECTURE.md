@@ -33,7 +33,7 @@
 |---|---|---|
 | api | official keyed API | eBay Browse, Best Buy, Walmart affiliate, SerpApi |
 | scrape | HTML / RSS parsing | Craigslist |
-| browser | headless browser, usually through the user's own session | Facebook Marketplace, car rental OTAs |
+| browser | headless Chromium via Playwright (`fetch/browser.py`); parsers are pure functions tested on saved captures | Kayak cars, Sixt direct; Facebook Marketplace (planned, user session) |
 | local | nearby in-store stock & price | retailer store-availability endpoints |
 | mock | deterministic test data | `mock` |
 

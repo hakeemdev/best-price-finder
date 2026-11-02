@@ -8,7 +8,7 @@ parser always runs first; the LLM refines it, and any failure falls back to the 
 from __future__ import annotations
 
 import logging
-from datetime import date
+from datetime import date, time
 from decimal import Decimal
 from typing import Any, Literal
 
@@ -31,7 +31,8 @@ Rules:
   a hotel/city, or a vehicle class. Strip words like "cheapest", "best price", budgets, locations
   and dates.
 - Dates are ISO (YYYY-MM-DD). Resolve relative dates against the given today date. If only a
-  start date is known leave end_date null.
+  start date is known leave end_date null. Pickup/drop-off clock times go in pickup_time /
+  dropoff_time as HH:MM (24h).
 - Airports: use IATA codes when the user gives one or the city has one obvious major airport;
   otherwise the city name.
 - Conditions: only set when the user states a preference (new, used, refurbished, open_box).
@@ -55,6 +56,8 @@ class ParsedQuery(BaseModel):
     destination_iata: str | None = None
     start_date: date | None = None
     end_date: date | None = None
+    pickup_time: time | None = None
+    dropoff_time: time | None = None
     flexible_days: int = 0
     adults: int = 1
     children: int = 0
@@ -135,6 +138,8 @@ class LLMQueryParser:
                 q.location = q.destination
         if p.start_date:
             q.dates = DateRange(start=p.start_date, end=p.end_date, flexible_days=p.flexible_days)
+        q.pickup_time = p.pickup_time or q.pickup_time
+        q.dropoff_time = p.dropoff_time or q.dropoff_time
         q.travelers = Travelers(adults=max(1, p.adults), children=max(0, p.children), rooms=max(1, p.rooms))
         q.cabin = p.cabin or q.cabin
         q.vehicle_class = p.vehicle_class or q.vehicle_class

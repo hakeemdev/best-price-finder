@@ -9,7 +9,7 @@ Design goals:
 from __future__ import annotations
 
 import hashlib
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, time
 from decimal import Decimal
 from enum import StrEnum
 from typing import Any
@@ -171,6 +171,8 @@ class Query(BaseModel):
     travelers: Travelers = Field(default_factory=Travelers)
     cabin: str | None = None  # economy / premium / business / first
     vehicle_class: str | None = None  # economy / suv / luxury
+    pickup_time: time | None = None  # car rental / reservation local time
+    dropoff_time: time | None = None
     one_way: bool = False
 
     include_used: bool = True

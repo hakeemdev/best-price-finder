@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     coupons_path: str = "data/coupons.yaml"
     cashback_portals_path: str = "data/cashback.yaml"
     rental_codes_path: str = "data/rental_codes.yaml"
+    rental_locations_path: str = "data/rental_locations.yaml"
+    browser_providers_enabled: bool = True  # headless-browser adapters (Sixt, Kayak); needs pricefinder[browser]
     memberships_path: str = "data/memberships.yaml"
     local_radius_km: float = 40.0
 

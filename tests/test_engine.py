@@ -1,12 +1,13 @@
 import pytest
 
 from pricefinder.core.engine import SearchEngine
-from pricefinder.core.models import Offer, Query, Vertical
+from pricefinder.core.models import Offer, ProviderKind, Query, Vertical
 from pricefinder.providers.base import Provider, ProviderContext
 
 
 class ExplodingProvider(Provider):
     name = "boom"
+    kind = ProviderKind.MOCK  # keep the mock provider in play alongside it
     verticals = frozenset({Vertical.GOODS})
 
     async def search(self, query: Query, ctx: ProviderContext) -> list[Offer]:

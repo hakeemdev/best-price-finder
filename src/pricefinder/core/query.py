@@ -7,7 +7,7 @@ implement the same `QueryParser` protocol and be swapped in via `SearchEngine(pa
 from __future__ import annotations
 
 import re
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from typing import Protocol
 
@@ -23,7 +23,12 @@ _ROUTE = re.compile(
 )
 _PRICE = re.compile(r"(?:under|below|less than|max|<=?)\s*\$?\s*(\d+(?:\.\d+)?)", re.IGNORECASE)
 _NEAR = re.compile(
-    r"\b(?:near|in|around|within)\s+(?P<loc>[A-Za-z0-9 ,.]+?)(?:\s+(?:under|below|for|on|from)\b|$)", re.IGNORECASE
+    r"\b(?:near|in|around|within|from|at)\s+(?P<loc>[A-Za-z][A-Za-z0-9 ,.]*?)"
+    r"(?:\s+(?:under|below|for|on|from|to|at|starting|pickup|pick up|drop ?off)\b|$|,(?=\s*\d))",
+    re.IGNORECASE,
+)
+_TIME_TOKEN = re.compile(
+    r"\b(\d{1,2})(?::(\d{2}))?\s*([ap]\.?m\.?)\b|\b([01]?\d|2[0-3]):([0-5]\d)\b(?!\s*[ap]m)", re.IGNORECASE
 )
 _QTY = re.compile(r"\b(\d+)\s*x\b|\bx\s*(\d+)\b", re.IGNORECASE)
 _NOISE_WORDS = re.compile(
@@ -105,6 +110,7 @@ class RuleBasedQueryParser:
             q.item = self._clean_item(text)
 
         q.dates = q.dates or self._parse_dates(text, today)
+        q.pickup_time, q.dropoff_time = self._parse_times(text)
         q.one_way = "one way" in lowered or "one-way" in lowered
         for cabin in ("first", "business", "premium economy", "economy"):
             if cabin in lowered:
@@ -125,6 +131,7 @@ class RuleBasedQueryParser:
     @staticmethod
     def _clean_item(text: str) -> str:
         cleaned = _DATE_TOKEN.sub("", text)
+        cleaned = _TIME_TOKEN.sub("", cleaned)
         cleaned = _PRICE.sub("", cleaned)
         cleaned = _NEAR.sub("", cleaned)
         cleaned = _QTY.sub("", cleaned)
@@ -196,6 +203,21 @@ class RuleBasedQueryParser:
         end = found[1] if len(found) > 1 else None
         flexible = 3 if "flexible" in lowered else 0
         return DateRange(start=found[0], end=end, flexible_days=flexible)
+
+    @staticmethod
+    def _parse_times(text: str) -> tuple[time | None, time | None]:
+        found: list[time] = []
+        for m in _TIME_TOKEN.finditer(text):
+            if m.group(3):
+                hour, minute, ampm = int(m.group(1)), int(m.group(2) or 0), m.group(3).lower().replace(".", "")
+                hour = hour % 12 + (12 if ampm == "pm" else 0)
+            else:
+                hour, minute = int(m.group(4)), int(m.group(5))
+            if 0 <= hour < 24 and 0 <= minute < 60:
+                found.append(time(hour, minute))
+        if not found:
+            return None, None
+        return found[0], (found[1] if len(found) > 1 else found[0])
 
     @staticmethod
     def _parse_travelers(lowered: str) -> Travelers:

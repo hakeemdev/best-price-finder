@@ -155,6 +155,39 @@ def profile_set(key: str, value: str, profile_id: str = "default") -> None:
     console.print(f"profile {profile_id}: {key} = {data[key]}")
 
 
+def _details(po) -> str:
+    """One dim line of vertical-specific facts pulled from offer attributes."""
+    a = po.offer.attributes
+    v = po.offer.vertical
+    parts: list[str] = []
+    if v == Vertical.CAR_RENTAL:
+        if a.get("per_day"):
+            parts.append(f"${a['per_day']:.2f}/day")
+        if a.get("agency"):
+            parts.append(f"agency: {a['agency']}")
+        if a.get("pickup_note"):
+            parts.append(a["pickup_note"].lower())
+        if a.get("passengers"):
+            parts.append(f"{a['passengers']} seats")
+        if a.get("free_cancellation"):
+            parts.append("free cancellation")
+        if a.get("kayak_score"):
+            parts.append(f"kayak score {a['kayak_score']}")
+    elif v == Vertical.FLIGHT:
+        if a.get("airlines"):
+            parts.append(", ".join(a["airlines"]))
+        if a.get("stops") is not None:
+            parts.append("nonstop" if a["stops"] == 0 else f"{a['stops']} stop(s)")
+        if a.get("total_duration_min"):
+            parts.append(f"{a['total_duration_min']} min")
+    elif v == Vertical.HOTEL:
+        if a.get("nightly"):
+            parts.append(f"${a['nightly']:.2f}/night")
+        if a.get("hotel_class"):
+            parts.append(f"{a['hotel_class']}-star")
+    return " · ".join(parts)
+
+
 def _render(result: SearchResult, limit: int) -> None:
     q = result.query
     console.print(
@@ -179,13 +212,15 @@ def _render(result: SearchResult, limit: int) -> None:
     for i, po in enumerate(result.offers[:limit], 1):
         savings = "; ".join(f"-{a.amount.amount:.2f} {a.description}" for a in po.adjustments if a.is_savings)
         notes = ", ".join(po.rank_reasons)
+        details = _details(po)
+        extra = "".join(f"\n[dim]{line}[/dim]" for line in (details, notes) if line)
         table.add_row(
             str(i),
             f"[green]{po.effective_total.amount:.2f}[/green]",
             f"{po.sticker_total.amount:.2f}",
             po.offer.seller.name,
             po.offer.condition.value if po.offer.vertical == Vertical.GOODS else "-",
-            po.offer.title[:70] + (f"\n[dim]{notes}[/dim]" if notes else ""),
+            po.offer.title[:90] + extra,
             savings[:120],
         )
     console.print(table)

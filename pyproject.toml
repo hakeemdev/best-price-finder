@@ -25,6 +25,7 @@ dependencies = [
   "pyyaml>=6.0",
   "python-dateutil>=2.9",
   "rapidfuzz>=3.9",
+  "selectolax>=0.3",
 ]
 
 [project.optional-dependencies]
@@ -43,6 +44,8 @@ google_shopping = "pricefinder.providers.goods.google_shopping:GoogleShoppingPro
 google_flights = "pricefinder.providers.travel.flights:GoogleFlightsProvider"
 google_hotels = "pricefinder.providers.travel.hotels:GoogleHotelsProvider"
 car_rental = "pricefinder.providers.travel.car_rental:CarRentalProvider"
+sixt = "pricefinder.providers.travel.sixt:SixtDirectProvider"
+kayak_cars = "pricefinder.providers.travel.kayak_cars:KayakCarsProvider"
 facebook_marketplace = "pricefinder.providers.local.facebook_marketplace:FacebookMarketplaceProvider"
 craigslist = "pricefinder.providers.local.craigslist:CraigslistProvider"
 local_inventory = "pricefinder.providers.local.store_inventory:LocalStoreInventoryProvider"

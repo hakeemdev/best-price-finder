@@ -33,17 +33,22 @@ def _slug(text: str) -> str:
 
 
 def dedupe(offers: list[Offer]) -> list[Offer]:
-    seen_urls: set[str] = set()
+    """Drop exact repeats: same listing (product + seller) at the same or a higher price.
+
+    URLs alone are not a listing identity: browser-backed sources emit many offers that all point at
+    one results page, so the URL only participates together with the product key and seller.
+    """
+    seen_exact: set[tuple[str, str, str]] = set()
     seen_listing: set[tuple[str, str]] = set()
     out: list[Offer] = []
     for o in offers:
-        if o.url and o.url in seen_urls:
-            continue
         key = (product_key(o), o.seller.name.lower())
+        exact = (o.url or "", *key)
+        if exact in seen_exact:
+            continue
         if key in seen_listing and o.base_price.amount >= _min_price_for(out, key):
             continue
-        if o.url:
-            seen_urls.add(o.url)
+        seen_exact.add(exact)
         seen_listing.add(key)
         out.append(o)
     return out

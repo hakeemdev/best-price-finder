@@ -1,0 +1,7 @@
+# Agency / aggregator location ids keyed by IATA code. Browser adapters need these to deep-link.
+# sixt: branch id from the Sixt results URL (uci=...). kayak: "<IATA>-a<cityId>" slug from a Kayak
+# results URL; unknown airports are resolved live through Kayak's location lookup and cached here.
+sixt:
+  EWR: 45429   # Newark Int Airport
+kayak:
+  EWR: EWR-a8252

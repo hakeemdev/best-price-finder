@@ -12,12 +12,13 @@
 - [x] Best Buy official API with in-store stock + distance; Walmart affiliate API (signed requests)
 - [x] LLM-backed query parser (Anthropic SDK, structured output, rule-based fallback)
 - [x] Car-rental discount-code sweep (AAA / Costco / USAA / AARP / loyalty) and membership benefits
+- [x] Live car rentals: Kayak results (agencies + OTAs, hour-granular times) and Sixt direct via headless browser; pickup/drop-off times in the query model
 
 ## Phase 1: coverage
 - [ ] Direct retailer adapters: Amazon (PA-API / affiliate), Target, Newegg, B&H, Micro Center, Costco
 - [ ] Local: Target / Walmart store stock, Costco warehouse pricing, Google local results, grocery feeds
 - [ ] Marketplaces: Facebook Marketplace (opt-in, own browser session), Craigslist, OfferUp, Mercari, Swappa, Back Market
-- [ ] Car rentals: agency direct (Hertz/Avis/Enterprise/Budget/Sixt), Kayak/Priceline/Expedia, Turo, Costco Travel rate feeds (code sweep already applies to any rental offer)
+- [ ] Car rentals: more agency-direct funnels (Hertz/Avis/Budget/Enterprise), Turo, Costco Travel; Kayak location auto-resolution for cities; Priceline/Expedia/Skyscanner are bot-walled headless (needs user-owned browser session)
 - [ ] Flights: airline direct, Skyscanner/Kayak, Southwest; points redemption valuation
 - [ ] Hotels: Airbnb/Vrbo, Booking, Hotels.com One Key, resort-fee parsing, points redemption valuation
 - [ ] Reservations: Resy/OpenTable availability, Ticketmaster/StubHub/SeatGeek resale, Viator/GetYourGuide

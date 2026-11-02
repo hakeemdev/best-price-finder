@@ -37,6 +37,8 @@ Rules:
   otherwise the city name.
 - Conditions: only set when the user states a preference (new, used, refurbished, open_box).
 - Budget: max_price is the numeric ceiling in the user's currency, else null.
+- Car rentals: set airport_pickup true only when the user insists on picking up at the airport
+  itself (on-airport counter / terminal), not merely because the location is an airport code.
 - Do not invent constraints the user did not state. Leave fields null when unknown."""
 
 
@@ -66,6 +68,7 @@ class ParsedQuery(BaseModel):
     vehicle_class: str | None = None
     one_way: bool = False
     wants_pickup_today: bool = False
+    airport_pickup: bool = False  # car rental must be picked up at the airport terminal / on-airport counter
     attributes: dict[str, str] = Field(default_factory=dict)
 
 
@@ -147,6 +150,8 @@ class LLMQueryParser:
         if p.wants_pickup_today:
             q.include_online = False
             q.attributes["pickup_today"] = True
+        if p.airport_pickup:
+            q.attributes["airport_pickup"] = True
         q.attributes.update(p.attributes)
         return q
 

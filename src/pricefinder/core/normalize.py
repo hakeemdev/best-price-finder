@@ -62,3 +62,19 @@ def _min_price_for(offers: list[Offer], key: tuple[str, str]) -> float:
 def matches_query(title: str, item: str, threshold: int = 55) -> bool:
     """Loose relevance filter so a search for 'xm5 headphones' doesn't rank an 'xm5 case' first."""
     return fuzz.token_set_ratio(title.lower(), item.lower()) >= threshold
+
+
+_ON_AIRPORT = re.compile(r"airport terminal|in[- ]terminal|on[- ]airport|airport counter|airport branch", re.I)
+_OFF_AIRPORT = re.compile(r"shuttle|call for pick-?up|off[- ]airport|meet and greet|delivery|downtown|hotel", re.I)
+
+
+def on_airport(offer: Offer) -> bool:
+    """True when a car-rental offer is picked up at the terminal / on-airport counter.
+
+    Sources label this differently; an explicit off-airport marker wins over an airport marker.
+    Unknown pick-up details count as off-airport, so the filter is conservative.
+    """
+    note = str(offer.attributes.get("pickup_note") or "")
+    if _OFF_AIRPORT.search(note):
+        return False
+    return bool(_ON_AIRPORT.search(note))

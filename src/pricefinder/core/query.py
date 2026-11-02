@@ -27,6 +27,11 @@ _NEAR = re.compile(
     r"(?:\s+(?:under|below|for|on|from|to|at|starting|pickup|pick up|drop ?off)\b|$|,(?=\s*\d))",
     re.IGNORECASE,
 )
+_AIRPORT_PICKUP = re.compile(
+    r"\b(?:at|in|on|from)[- ]the[- ]airport\b|\bin[- ]terminal\b|\bon[- ]airport\b"
+    r"|\bairport (?:pickup|pick-up|counter|terminal)\b",
+    re.IGNORECASE,
+)
 _TIME_TOKEN = re.compile(
     r"\b(\d{1,2})(?::(\d{2}))?\s*([ap]\.?m\.?)\b|\b([01]?\d|2[0-3]):([0-5]\d)\b(?!\s*[ap]m)", re.IGNORECASE
 )
@@ -111,6 +116,8 @@ class RuleBasedQueryParser:
 
         q.dates = q.dates or self._parse_dates(text, today)
         q.pickup_time, q.dropoff_time = self._parse_times(text)
+        if _AIRPORT_PICKUP.search(text):
+            q.attributes["airport_pickup"] = True
         q.one_way = "one way" in lowered or "one-way" in lowered
         for cabin in ("first", "business", "premium economy", "economy"):
             if cabin in lowered:
@@ -131,6 +138,7 @@ class RuleBasedQueryParser:
     @staticmethod
     def _clean_item(text: str) -> str:
         cleaned = _DATE_TOKEN.sub("", text)
+        cleaned = _AIRPORT_PICKUP.sub("", cleaned)
         cleaned = _TIME_TOKEN.sub("", cleaned)
         cleaned = _PRICE.sub("", cleaned)
         cleaned = _NEAR.sub("", cleaned)

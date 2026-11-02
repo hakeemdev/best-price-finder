@@ -51,3 +51,13 @@ def test_car_rental_class():
 def test_dates_in_the_past_roll_forward():
     q = p.parse("flights LAX to SEA Jan 5", today=TODAY)
     assert q.dates and q.dates.start == date(2027, 1, 5)
+
+
+def test_airport_pickup_constraint_detected_and_stripped():
+    q = p.parse("rent a car from EWR at the airport from 11:30PM 11/4/26 to 11:30PM 11/10/26", today=TODAY)
+    assert q.vertical == Vertical.CAR_RENTAL
+    assert q.attributes.get("airport_pickup") is True
+    assert "airport" not in q.item.lower()
+    assert q.destination and q.destination.iata == "EWR"
+    plain = p.parse("rent a car from EWR 11/4/26 to 11/10/26", today=TODAY)
+    assert "airport_pickup" not in plain.attributes

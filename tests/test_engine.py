@@ -2,6 +2,7 @@ import pytest
 
 from pricefinder.core.engine import SearchEngine
 from pricefinder.core.models import Offer, ProviderKind, Query, Vertical
+from pricefinder.core.registry import ProviderRegistry
 from pricefinder.providers.base import Provider, ProviderContext
 
 
@@ -71,3 +72,31 @@ async def test_travel_search_applies_rental_code_sweep(registry, repo):
     assert codes and all("USAA" in a.description for a in codes)
     # Exactly one code per rental offer survives the stacking rules.
     assert all(sum(a.kind == AdjustmentKind.PROMO_CODE for a in o.adjustments) == 1 for o in direct)
+
+
+def test_airport_pickup_filter_keeps_only_terminal_offers():
+    from decimal import Decimal
+
+    from pricefinder.core.models import Money, Seller, SellerType
+    from pricefinder.core.normalize import on_airport
+
+    def rental(note, oid):
+        return Offer(
+            id=oid,
+            provider="t",
+            vertical=Vertical.CAR_RENTAL,
+            title="car",
+            seller=Seller(name="x", type=SellerType.OTA),
+            base_price=Money(amount=Decimal("300")),
+            attributes={"pickup_note": note},
+        )
+
+    assert on_airport(rental("Airport terminal", "a"))
+    assert on_airport(rental("Airport branch (Sixt counter)", "b"))
+    assert not on_airport(rental("Call for pick-up", "c"))
+    assert not on_airport(rental("Shuttle", "d"))
+    assert not on_airport(rental(None, "e"))
+    engine = SearchEngine(ProviderRegistry(), repository=None)
+    q = Query(raw="x", item="car", vertical=Vertical.CAR_RENTAL, attributes={"airport_pickup": True})
+    kept = engine._filter([rental("Airport terminal", "a"), rental("Shuttle", "d"), rental(None, "e")], q)
+    assert [o.id for o in kept] == ["a"]

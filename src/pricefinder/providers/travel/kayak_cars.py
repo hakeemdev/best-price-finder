@@ -47,6 +47,7 @@ _AGENCIES = (
     "easirent",
     "zezgo",
 )
+_MAX_CARDS = 300
 _SCORE = re.compile(r"offer from (?P<provider>.+?) has a score of (?P<score>[\d.]+)", re.I)
 _MONEY = re.compile(r"\$\s?(\d{1,5}(?:,\d{3})*(?:\.\d{2})?)")
 
@@ -211,16 +212,22 @@ class KayakCarsProvider(Provider):
                 if stable >= 2:
                     break
                 await page.wait_for_timeout(3000)
-            # Kayak renders cards lazily; scroll to pull in more of the (price-sorted) list.
-            cards = 0
-            for _ in range(8):
-                await page.mouse.wheel(0, 4000)
-                await page.wait_for_timeout(1500)
+            # Kayak renders cards lazily; keep scrolling until the (price-sorted) list stops growing.
+            cards, stale = 0, 0
+            for _ in range(40):
+                await page.mouse.wheel(0, 6000)
+                await page.wait_for_timeout(1200)
+                for sel in ('button:has-text("Show more results")', 'button:has-text("Show more")'):
+                    more = page.locator(sel).first
+                    if await more.count() and await more.is_visible():
+                        await more.click(timeout=2000)
+                        await page.wait_for_timeout(1500)
+                        break
                 n = await page.evaluate("document.querySelectorAll('div.js-result').length")
-                if n <= cards or n >= 80:
-                    cards = n
+                stale = stale + 1 if n <= cards else 0
+                cards = max(cards, n)
+                if stale >= 3 or cards >= _MAX_CARDS:
                     break
-                cards = n
             html = await page.content()
         days = max(query.dates.nights or 1, 1)
         offers: list[Offer] = []

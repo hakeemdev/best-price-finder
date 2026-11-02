@@ -150,6 +150,7 @@ class SixtDirectProvider(Provider):
                         "transmission": v["transmission"],
                         "unlimited_miles": v["unlimited_miles"],
                         "days": days,
+                        "pickup_note": "Airport branch (Sixt counter)",
                         "pickup": f"{query.dates.start} {query.pickup_time or ''}".strip(),
                         "dropoff": f"{query.dates.end} {query.dropoff_time or ''}".strip(),
                         "total_includes_taxes_fees": True,

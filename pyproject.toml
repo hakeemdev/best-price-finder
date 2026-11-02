@@ -30,7 +30,8 @@ dependencies = [
 [project.optional-dependencies]
 browser = ["playwright>=1.45"]
 postgres = ["psycopg[binary]>=3.2"]
-llm = ["anthropic>=0.30"]
+llm = ["anthropic>=1.0"]
+walmart = ["cryptography>=42"]
 
 [project.scripts]
 pf = "pricefinder.cli:app"
@@ -45,6 +46,8 @@ car_rental = "pricefinder.providers.travel.car_rental:CarRentalProvider"
 facebook_marketplace = "pricefinder.providers.local.facebook_marketplace:FacebookMarketplaceProvider"
 craigslist = "pricefinder.providers.local.craigslist:CraigslistProvider"
 local_inventory = "pricefinder.providers.local.store_inventory:LocalStoreInventoryProvider"
+bestbuy = "pricefinder.providers.goods.bestbuy:BestBuyProvider"
+walmart = "pricefinder.providers.goods.walmart:WalmartProvider"
 
 [dependency-groups]
 dev = [
@@ -53,6 +56,7 @@ dev = [
   "ruff>=0.5",
   "mypy>=1.10",
   "respx>=0.21",
+  "cryptography>=42",
 ]
 
 [build-system]

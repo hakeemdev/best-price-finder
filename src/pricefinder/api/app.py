@@ -9,8 +9,8 @@ from pydantic import BaseModel
 from .. import __version__
 from ..config import get_settings
 from ..core.engine import SearchEngine
+from ..core.llm_parser import build_parser
 from ..core.models import Query, SearchResult, UserProfile, Vertical
-from ..core.query import RuleBasedQueryParser
 from ..core.registry import default_registry
 from ..storage.repository import Repository
 
@@ -58,7 +58,7 @@ def providers() -> list[dict]:
 async def search(req: SearchRequest) -> SearchResult:
     if req.query is None and not req.text:
         raise HTTPException(400, "provide `text` or `query`")
-    query = req.query or RuleBasedQueryParser().parse(req.text or "")
+    query = req.query or build_parser().parse(req.text or "")
     query.profile_id = req.profile_id
     engine = SearchEngine(repository=repo())
     return await engine.search(query, providers=req.providers)
@@ -68,7 +68,7 @@ async def search(req: SearchRequest) -> SearchResult:
 async def search_get(
     q: str = QParam(..., min_length=1), vertical: Vertical | None = None, profile_id: str = "default"
 ) -> SearchResult:
-    query = RuleBasedQueryParser().parse(q)
+    query = build_parser().parse(q)
     if vertical:
         query.vertical = vertical
     query.profile_id = profile_id

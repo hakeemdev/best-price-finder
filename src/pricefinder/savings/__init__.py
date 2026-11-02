@@ -7,6 +7,8 @@ The engine runs all of them and the ranker decides how much to trust each adjust
 from .base import SavingsSource
 from .cashback import CashbackPortalSource
 from .coupons import StaticCouponSource
+from .membership import MembershipSource
+from .rental_codes import RentalCodeSweepSource
 from .rewards import CreditCardRewardsSource
 from .signup import SignupBonusSource
 
@@ -15,5 +17,19 @@ __all__ = [
     "CashbackPortalSource",
     "StaticCouponSource",
     "CreditCardRewardsSource",
+    "MembershipSource",
+    "RentalCodeSweepSource",
     "SignupBonusSource",
 ]
+
+
+def default_sources() -> list[SavingsSource]:
+    """Every built-in savings source, in evaluation order."""
+    return [
+        StaticCouponSource(),
+        SignupBonusSource(),
+        RentalCodeSweepSource(),
+        MembershipSource(),
+        CashbackPortalSource(),
+        CreditCardRewardsSource(),
+    ]

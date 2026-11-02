@@ -13,18 +13,7 @@ bestbuy:
   - description: "Best Buy open-box / outlet additional savings (varies)"
     percent: 0
     confidence: 0.1
-hertz:
-  - description: "AAA member rate"
-    percent: 10
-    confidence: 0.5
-    requires: "AAA membership"
-    vertical: car_rental
-avis:
-  - description: "Costco Travel / AWD code"
-    percent: 15
-    confidence: 0.5
-    requires: "Costco membership"
-    vertical: car_rental
+# Car-rental discount codes live in data/rental_codes.yaml (one code per rental, swept by savings.rental_codes).
 
 # New-customer / quick-signup offers, keyed by merchant.
 signup:

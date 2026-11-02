@@ -1,0 +1,35 @@
+# Car rental discount codes by agency (merchant key). One code per rental; the ranker keeps the best.
+# percent values are typical, not guaranteed; confidence reflects how reliably the code applies.
+# requires_membership: aaa | costco | usaa | aarp | <corporate> | loyalty (free program) | none
+agencies:
+  hertz:
+    - { name: "AAA member rate", code_type: CDP, code: "AAA", requires_membership: aaa, percent: 15, confidence: 0.7 }
+    - { name: "Costco Travel rate", code_type: CDP, requires_membership: costco, percent: 20, confidence: 0.6 }
+    - { name: "USAA member rate", code_type: CDP, requires_membership: usaa, percent: 20, confidence: 0.6 }
+    - { name: "AARP member rate", code_type: CDP, requires_membership: aarp, percent: 15, confidence: 0.6 }
+    - { name: "Hertz Gold Plus Rewards", code_type: loyalty, requires_membership: loyalty, percent: 5, confidence: 0.5, quick_signup: true }
+  avis:
+    - { name: "AAA member rate", code_type: AWD, requires_membership: aaa, percent: 15, confidence: 0.7 }
+    - { name: "Costco Travel rate", code_type: AWD, requires_membership: costco, percent: 20, confidence: 0.6 }
+    - { name: "USAA member rate", code_type: AWD, requires_membership: usaa, percent: 20, confidence: 0.6 }
+    - { name: "AARP member rate", code_type: AWD, requires_membership: aarp, percent: 20, confidence: 0.6 }
+    - { name: "Avis Preferred", code_type: loyalty, requires_membership: loyalty, percent: 3, confidence: 0.4, quick_signup: true }
+  budget:
+    - { name: "AAA member rate", code_type: BCD, requires_membership: aaa, percent: 15, confidence: 0.7 }
+    - { name: "Costco Travel rate", code_type: BCD, requires_membership: costco, percent: 20, confidence: 0.6 }
+    - { name: "USAA member rate", code_type: BCD, requires_membership: usaa, percent: 20, confidence: 0.6 }
+  enterprise:
+    - { name: "Costco Travel rate", code_type: customer_number, requires_membership: costco, percent: 15, confidence: 0.6 }
+    - { name: "USAA member rate", code_type: customer_number, requires_membership: usaa, percent: 15, confidence: 0.5 }
+  alamo:
+    - { name: "Costco Travel rate", code_type: contract, requires_membership: costco, percent: 20, confidence: 0.6 }
+    - { name: "USAA member rate", code_type: contract, requires_membership: usaa, percent: 15, confidence: 0.5 }
+  national:
+    - { name: "Emerald Club", code_type: loyalty, requires_membership: loyalty, percent: 5, confidence: 0.4, quick_signup: true }
+    - { name: "USAA member rate", code_type: contract, requires_membership: usaa, percent: 15, confidence: 0.5 }
+  sixt:
+    - { name: "AAA member rate", code_type: corporate, requires_membership: aaa, percent: 10, confidence: 0.5 }
+  dollar:
+    - { name: "AAA member rate", code_type: CDP, requires_membership: aaa, percent: 10, confidence: 0.5 }
+  thrifty:
+    - { name: "AAA member rate", code_type: CDP, requires_membership: aaa, percent: 10, confidence: 0.5 }

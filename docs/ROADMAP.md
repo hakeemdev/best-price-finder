@@ -9,12 +9,15 @@
 - [x] Price history (append-only), best-ever, profiles; SQLite default, Postgres optional
 - [x] CLI (`pf`) and HTTP API
 - [x] Providers: mock, eBay Browse API, Google Shopping / Flights / Hotels via SerpApi
+- [x] Best Buy official API with in-store stock + distance; Walmart affiliate API (signed requests)
+- [x] LLM-backed query parser (Anthropic SDK, structured output, rule-based fallback)
+- [x] Car-rental discount-code sweep (AAA / Costco / USAA / AARP / loyalty) and membership benefits
 
 ## Phase 1: coverage
-- [ ] Direct retailer adapters: Amazon (PA-API / affiliate), Walmart, Best Buy, Target, Newegg, B&H, Micro Center, Costco
-- [ ] Local: store-availability endpoints keyed by postal code; Google local results; grocery feeds
+- [ ] Direct retailer adapters: Amazon (PA-API / affiliate), Target, Newegg, B&H, Micro Center, Costco
+- [ ] Local: Target / Walmart store stock, Costco warehouse pricing, Google local results, grocery feeds
 - [ ] Marketplaces: Facebook Marketplace (opt-in, own browser session), Craigslist, OfferUp, Mercari, Swappa, Back Market
-- [ ] Car rentals: agency direct (Hertz/Avis/Enterprise/Budget/Sixt), Kayak/Priceline/Expedia, Turo, Costco Travel; discount-code sweep (AAA, Costco, USAA, corporate CDP codes)
+- [ ] Car rentals: agency direct (Hertz/Avis/Enterprise/Budget/Sixt), Kayak/Priceline/Expedia, Turo, Costco Travel rate feeds (code sweep already applies to any rental offer)
 - [ ] Flights: airline direct, Skyscanner/Kayak, Southwest; points redemption valuation
 - [ ] Hotels: Airbnb/Vrbo, Booking, Hotels.com One Key, resort-fee parsing, points redemption valuation
 - [ ] Reservations: Resy/OpenTable availability, Ticketmaster/StubHub/SeatGeek resale, Viator/GetYourGuide
@@ -23,7 +26,7 @@
 - [ ] Live coupon feeds and community code aggregation with success-rate tracking
 - [ ] Checkout code testing via browser automation (opt-in)
 - [ ] Automated card catalog refresh; per-user point valuations; category-quarter bonuses
-- [ ] Loyalty status perks (free upgrades, waived fees) and membership rates (Costco, AAA, student)
+- [ ] Loyalty status perks (free upgrades, waived fees); auto-refresh membership + rental-code catalogs
 - [ ] Price-match policy engine (retailer matches competitor X within Y days)
 - [ ] Tax estimation by destination / pickup location
 - [ ] Currency conversion for cross-border offers
@@ -35,7 +38,7 @@
 - [ ] Archive crawl results for offline querying
 
 ## Phase 4: understanding & UX
-- [ ] LLM-backed query parser (`pricefinder[llm]`) for messy natural language and multi-item lists
+- [ ] Multi-item lists and conversational refinement on top of the LLM parser
 - [ ] Web UI
 - [ ] Browser extension that overlays effective price on retailer pages
 - [ ] Multi-currency, multi-country marketplaces

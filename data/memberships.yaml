@@ -1,0 +1,45 @@
+# Membership benefits by merchant key or vertical. Values are typical; verify current terms.
+memberships:
+  costco:
+    name: Costco
+    quick_signup: false
+    benefits:
+      costco: { percent: 0, description: "member pricing (already reflected in sticker)" }
+      costcotravel: { percent: 5, description: "Costco Travel bundled rates", confidence: 0.6 }
+  aaa:
+    name: AAA
+    quick_signup: true
+    benefits:
+      "vertical:hotel": { percent: 5, description: "AAA hotel rate", confidence: 0.6 }
+      bestwestern: { percent: 10, description: "AAA rate", confidence: 0.7 }
+      hilton: { percent: 5, description: "AAA rate", confidence: 0.7 }
+      marriott: { percent: 5, description: "AAA rate", confidence: 0.7 }
+      hyatt: { percent: 10, description: "AAA rate", confidence: 0.7 }
+      dell: { percent: 5, description: "AAA member savings", confidence: 0.5 }
+  prime:
+    name: Amazon Prime
+    quick_signup: true
+    benefits:
+      amazon: { free_shipping: true, description: "free Prime shipping", confidence: 0.95 }
+      wholefoods: { percent: 10, description: "Prime deals (select items)", confidence: 0.3 }
+  student:
+    name: Student discounts
+    quick_signup: false
+    benefits:
+      apple: { percent: 10, description: "Apple Education pricing", confidence: 0.8 }
+      bestbuy: { percent: 5, description: "student deals (select items)", confidence: 0.3 }
+      dell: { percent: 10, description: "Dell University", confidence: 0.6 }
+      samsung: { percent: 15, description: "Samsung Education Offers", confidence: 0.7 }
+  military:
+    name: Military / veteran
+    quick_signup: false
+    benefits:
+      homedepot: { percent: 10, description: "military discount", confidence: 0.9 }
+      lowes: { percent: 10, description: "military discount", confidence: 0.9 }
+      "vertical:hotel": { percent: 10, description: "government/military rate", confidence: 0.5 }
+  aarp:
+    name: AARP
+    quick_signup: true
+    benefits:
+      "vertical:hotel": { percent: 10, description: "AARP hotel rate", confidence: 0.5 }
+      "vertical:car_rental": { percent: 0, description: "see rental codes" }

@@ -1,7 +1,8 @@
-"""Nearby in-store inventory and pricing.
+"""Nearby in-store inventory and pricing (aggregator slot).
 
-Planned sources: Best Buy / Walmart / Target store-availability endpoints, Google Shopping
-"nearby" results, Costco / Micro Center / Home Depot local stock, and grocery price feeds.
+Best Buy in-store stock is already live inside the `bestbuy` provider. This slot is reserved for
+sources that only report local availability: Target / Walmart store stock, Costco warehouse pricing,
+Micro Center, Home Depot / Lowe's, grocery price feeds, and Google "nearby" shopping results.
 Returns offers with `distance_km` so the ranker can trade off price against the drive.
 """
 
@@ -15,5 +16,5 @@ class LocalStoreInventoryProvider(NotYetImplementedProvider):
     name = "local_inventory"
     kind = ProviderKind.LOCAL
     verticals = frozenset({Vertical.GOODS})
-    description = "In-store stock and prices at shops near you (planned)"
-    planned_approach = "retailer store-availability APIs + Google local results, keyed by postal code"
+    description = "Store-only stock near you: Target, Costco, Micro Center, Home Depot (planned)"
+    planned_approach = "retailer store-availability endpoints + Google local results, keyed by postal code"

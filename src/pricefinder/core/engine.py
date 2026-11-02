@@ -8,17 +8,12 @@ from datetime import UTC, datetime
 
 from ..config import Settings, get_settings
 from ..providers.base import Provider, ProviderContext
-from ..savings import (
-    CashbackPortalSource,
-    CreditCardRewardsSource,
-    SavingsSource,
-    SignupBonusSource,
-    StaticCouponSource,
-)
+from ..savings import SavingsSource, default_sources
 from ..storage.repository import Repository
+from .llm_parser import build_parser
 from .models import Offer, PricedOffer, Query, SearchResult, UserProfile
 from .normalize import dedupe, matches_query, product_key
-from .query import QueryParser, RuleBasedQueryParser
+from .query import QueryParser
 from .ranking import Ranker
 from .registry import ProviderRegistry, default_registry
 
@@ -38,18 +33,9 @@ class SearchEngine:
     ) -> None:
         self.settings = settings or get_settings()
         self.registry = registry or default_registry()
-        self.parser = parser or RuleBasedQueryParser()
+        self.parser = parser or build_parser(self.settings)
         self.ranker = ranker or Ranker()
-        self.savings = (
-            savings
-            if savings is not None
-            else [
-                StaticCouponSource(),
-                SignupBonusSource(),
-                CashbackPortalSource(),
-                CreditCardRewardsSource(),
-            ]
-        )
+        self.savings = savings if savings is not None else default_sources()
         self.repo = repository
 
     # -- entry points ---------------------------------------------------------

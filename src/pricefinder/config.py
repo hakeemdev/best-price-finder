@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -20,7 +21,15 @@ class Settings(BaseSettings):
     ebay_client_id: str | None = None
     ebay_client_secret: str | None = None
     serpapi_key: str | None = None
+    bestbuy_api_key: str | None = None
+    walmart_consumer_id: str | None = None
+    walmart_private_key_path: str | None = None  # PEM file from walmart.io
+    walmart_key_version: str = "1"
+
+    # Query understanding. "auto" uses the LLM parser when an Anthropic key is available.
     anthropic_api_key: str | None = None
+    query_parser: Literal["auto", "rules", "llm"] = "auto"
+    llm_model: str = "claude-opus-5-5"
 
     # Networking / orchestration
     http_timeout_seconds: float = 20.0
@@ -32,6 +41,9 @@ class Settings(BaseSettings):
     cards_catalog_path: str = "data/cards.yaml"
     coupons_path: str = "data/coupons.yaml"
     cashback_portals_path: str = "data/cashback.yaml"
+    rental_codes_path: str = "data/rental_codes.yaml"
+    memberships_path: str = "data/memberships.yaml"
+    local_radius_km: float = 40.0
 
     # Rewards valuation defaults (cents per point) when a card does not specify
     default_point_value_cents: float = Field(default=1.0, ge=0)

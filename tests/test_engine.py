@@ -48,3 +48,25 @@ async def test_search_text_routes_flights_to_flight_providers(registry):
     result = await engine.search_text("flights SFO to JFK Dec 12 to Dec 19")
     assert result.query.vertical == Vertical.FLIGHT
     assert result.providers_queried == ["mock"]
+    assert result.offers and not result.providers_failed
+    assert {o.offer.seller.type.value for o in result.offers} == {"direct", "ota"}
+
+
+@pytest.mark.asyncio
+async def test_travel_search_applies_rental_code_sweep(registry, repo):
+    from pricefinder.core.models import AdjustmentKind, UserProfile
+
+    repo.save_profile(UserProfile(id="renter", memberships=["usaa"], willing_to_sign_up=False))
+    engine = SearchEngine(registry, repository=repo)
+    result = await engine.search_text(
+        "rental car SUV in Denver 2027-01-03 to 2027-01-10 profile", profile=repo.get_profile("renter")
+    )
+    assert result.query.vertical == Vertical.CAR_RENTAL
+    assert result.query.dates and result.query.dates.nights == 7
+    assert result.offers and not result.providers_failed
+    direct = [o for o in result.offers if o.offer.seller.name in ("Hertz", "Avis")]
+    assert direct, "mock should emit agency-direct rental offers"
+    codes = [a for o in direct for a in o.adjustments if a.kind == AdjustmentKind.PROMO_CODE]
+    assert codes and all("USAA" in a.description for a in codes)
+    # Exactly one code per rental offer survives the stacking rules.
+    assert all(sum(a.kind == AdjustmentKind.PROMO_CODE for a in o.adjustments) == 1 for o in direct)

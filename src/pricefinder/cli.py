@@ -12,6 +12,7 @@ from rich.table import Table
 
 from .config import get_settings
 from .core.engine import SearchEngine
+from .core.llm_parser import build_parser
 from .core.models import CardHolding, SearchResult, UserProfile, Vertical
 from .core.query import RuleBasedQueryParser
 from .core.registry import default_registry
@@ -47,8 +48,7 @@ def search(
     no_store: bool = typer.Option(False, help="Do not record results to the price history DB"),
 ) -> None:
     """Search every available source and rank by effective price."""
-    parser = RuleBasedQueryParser()
-    query = parser.parse(text)
+    query = build_parser().parse(text)
     if vertical:
         query.vertical = vertical
     query.profile_id = profile
@@ -61,9 +61,10 @@ def search(
 
 
 @app.command()
-def parse(text: str) -> None:
+def parse(text: str, rules_only: bool = typer.Option(False, help="Skip the LLM parser even if configured")) -> None:
     """Show how free text is interpreted (vertical, dates, locations, constraints)."""
-    console.print_json(RuleBasedQueryParser().parse(text).model_dump_json())
+    parser = RuleBasedQueryParser() if rules_only else build_parser()
+    console.print_json(parser.parse(text).model_dump_json())
 
 
 @app.command()
@@ -183,7 +184,7 @@ def _render(result: SearchResult, limit: int) -> None:
             f"[green]{po.effective_total.amount:.2f}[/green]",
             f"{po.sticker_total.amount:.2f}",
             po.offer.seller.name,
-            po.offer.condition.value,
+            po.offer.condition.value if po.offer.vertical == Vertical.GOODS else "-",
             po.offer.title[:70] + (f"\n[dim]{notes}[/dim]" if notes else ""),
             savings[:120],
         )

@@ -26,6 +26,18 @@ _NEAR = re.compile(
     r"\b(?:near|in|around|within)\s+(?P<loc>[A-Za-z0-9 ,.]+?)(?:\s+(?:under|below|for|on|from)\b|$)", re.IGNORECASE
 )
 _QTY = re.compile(r"\b(\d+)\s*x\b|\bx\s*(\d+)\b", re.IGNORECASE)
+_NOISE_WORDS = re.compile(
+    r"\b(best price for|cheapest|price of|buy|find|deal on|deals on|rental cars?|car rentals?|rent a car|"
+    r"hotels? in|hotels?|flights?|airfare|reservation for|for \d+ (?:adults?|people|nights?|days?)|"
+    r"\d+ (?:adults?|rooms?|kids?|children|nights?))\b",
+    re.IGNORECASE,
+)
+_DATE_TOKEN = re.compile(
+    r"\b(?:\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}(?:/\d{2,4})?|"
+    r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+\d{4})?)\b"
+    r"|\b(?:next weekend|this weekend|tomorrow)\b",
+    re.IGNORECASE,
+)
 
 _VERTICAL_HINTS: dict[Vertical, tuple[str, ...]] = {
     Vertical.FLIGHT: ("flight", "flights", "airfare", "fly to", "flying to", "plane ticket", "round trip", "one way"),
@@ -89,7 +101,7 @@ class RuleBasedQueryParser:
             self._parse_stay(q, text)
         else:
             if m := _NEAR.search(text):
-                q.location = Location(text=m.group("loc").strip())
+                q.location = self._loc(m.group("loc"))
             q.item = self._clean_item(text)
 
         q.dates = q.dates or self._parse_dates(text, today)
@@ -112,15 +124,14 @@ class RuleBasedQueryParser:
 
     @staticmethod
     def _clean_item(text: str) -> str:
-        cleaned = _PRICE.sub("", text)
+        cleaned = _DATE_TOKEN.sub("", text)
+        cleaned = _PRICE.sub("", cleaned)
         cleaned = _NEAR.sub("", cleaned)
         cleaned = _QTY.sub("", cleaned)
         for hints in _CONDITION_HINTS.values():
             for h in hints:
                 cleaned = re.sub(rf"\b{re.escape(h)}\b", "", cleaned, flags=re.IGNORECASE)
-        cleaned = re.sub(
-            r"\b(best price for|cheapest|price of|buy|find|deal on|deals on)\b", "", cleaned, flags=re.IGNORECASE
-        )
+        cleaned = _NOISE_WORDS.sub("", cleaned)
         return re.sub(r"\s+", " ", cleaned).strip(" ,.-")
 
     def _parse_flight(self, q: Query, text: str) -> None:
@@ -139,6 +150,8 @@ class RuleBasedQueryParser:
             q.destination = self._loc(m.group("loc"))
             q.location = q.destination
         q.item = self._clean_item(text)
+        if q.destination and (not q.item or q.item.lower() in ("in", "to", "near")):
+            q.item = q.destination.text or ""
         for cls in ("economy", "compact", "midsize", "suv", "luxury", "van", "truck", "convertible"):
             if re.search(rf"\b{cls}\b", text, re.IGNORECASE):
                 q.vehicle_class = cls
@@ -146,7 +159,7 @@ class RuleBasedQueryParser:
 
     @staticmethod
     def _loc(raw: str) -> Location:
-        raw = raw.strip()
+        raw = re.sub(r"\s+", " ", _NOISE_WORDS.sub("", _DATE_TOKEN.sub("", raw))).strip(" ,.-")
         iata = raw.upper() if re.fullmatch(r"[A-Za-z]{3}", raw) else None
         return Location(text=raw, iata=iata)
 

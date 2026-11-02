@@ -23,7 +23,8 @@ effective price = base price
                 - credit card rewards (best card you hold, or one worth opening)
                 - quick signup offers (newsletter, store account, app)
                 - cashback portals (Rakuten, TopCashback, ...)
-                - loyalty / membership benefits (Costco, AAA, hotel & airline status)
+                - membership benefits (Costco, AAA, AARP, Prime, student, military)
+                - rental discount-code sweep (one best CDP/AWD/BCD code per rental)
 ```
 
 Every adjustment carries a **confidence**. The ranker reports both the *expected* effective price and a *guaranteed* price that only counts certain savings, and applies soft penalties for distance, individual sellers, low ratings and unknown stock so a sketchy listing 60 km away doesn't beat a reputable retailer by two dollars.
@@ -32,10 +33,10 @@ Every adjustment carries a **confidence**. The ranker reports both the *expected
 
 | Vertical | Examples | Sources (now / planned) |
 |---|---|---|
-| goods | electronics, appliances, groceries, anything with a SKU | Google Shopping (Amazon, Walmart, Best Buy, Target, ...), eBay / local store inventory, Facebook Marketplace, Craigslist, OfferUp |
+| goods | electronics, appliances, groceries, anything with a SKU | Google Shopping (Amazon, Walmart, Best Buy, Target, ...), eBay, Best Buy direct + in-store stock, Walmart direct + marketplace / Target, Costco, Facebook Marketplace, Craigslist, OfferUp |
 | flight | one-way, round-trip, multi-city | Google Flights / airline direct, points redemptions, error fares |
 | hotel | hotels, resorts, vacation rentals | Google Hotels (direct + OTA) / Airbnb, Vrbo, points redemptions, resort-fee aware |
-| car_rental | agencies, peer-to-peer | planned: Kayak/Priceline/agency direct, Turo, Costco Travel, AAA/USAA/corporate code sweeps |
+| car_rental | agencies, peer-to-peer | discount-code sweep (AAA, Costco, USAA, AARP, loyalty) live / rates: Kayak/Priceline/agency direct, Turo, Costco Travel |
 | reservation | restaurants, events, tickets, experiences | planned |
 | service | subscriptions, insurance, plans | planned |
 
@@ -54,6 +55,9 @@ Keys you may want (free tiers exist for all of them):
 
 - `PF_SERPAPI_KEY` turns on Google Shopping, Google Flights and Google Hotels.
 - `PF_EBAY_CLIENT_ID` / `PF_EBAY_CLIENT_SECRET` turns on eBay (official Browse API).
+- `PF_BESTBUY_API_KEY` turns on Best Buy, including in-store stock near `PF_HOME_POSTAL_CODE`.
+- `PF_WALMART_CONSUMER_ID` / `PF_WALMART_PRIVATE_KEY_PATH` turns on Walmart (needs `pricefinder[walmart]`).
+- `PF_ANTHROPIC_API_KEY` (or `ANTHROPIC_API_KEY`) turns on the LLM query parser (needs `pricefinder[llm]`); messy requests like "a 65 inch oled I can grab today under 1500" get understood instead of keyword-matched. Set `PF_QUERY_PARSER=rules` to force the offline parser.
 
 ## Usage
 
@@ -66,6 +70,7 @@ pf parse "..."                       # see how a query is interpreted
 pf history "wh-1000xm5"              # prices seen in past searches
 pf profile add-card chase_sapphire_preferred
 pf profile set willing_to_open_cards true
+pf profile set memberships costco,aaa,prime     # unlocks rental codes + member rates
 pf serve                             # HTTP API at http://127.0.0.1:8000/docs
 ```
 
@@ -95,12 +100,12 @@ Details in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Adding a source is one 
 src/pricefinder/
   core/        models, query parsing, registry, engine, ranking, normalization
   providers/   goods/ travel/ local/ -- one adapter per source
-  savings/     coupons, credit-card rewards, signup offers, cashback portals
+  savings/     coupons, credit-card rewards, signup offers, cashback, memberships, rental codes
   storage/     SQLAlchemy models + repository (price history, profiles)
   fetch/       shared HTTP client (retries, rate limits, cache)
   api/         FastAPI app
   cli.py       `pf` command
-data/          cards.yaml, coupons.yaml, cashback.yaml seed catalogs
+data/          cards, coupons, cashback, memberships, rental_codes seed catalogs
 tests/
 ```
 

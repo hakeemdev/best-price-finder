@@ -12,11 +12,11 @@
 
 | Stage | Module | Notes |
 |---|---|---|
-| Parse | `core/query.py` | Rule-based by default. Any object with `parse(text) -> Query` can be swapped in (LLM-backed parser planned under the `llm` extra). |
+| Parse | `core/query.py`, `core/llm_parser.py` | Rule-based always runs; with an Anthropic key the LLM parser refines it via structured output and falls back to the rules result on any failure. `PF_QUERY_PARSER` = auto / rules / llm. |
 | Select providers | `core/registry.py` | By vertical, availability, opt-in flag, and `include_local` / `include_online`. Entry-point discovery lets external packages add providers. |
 | Fan out | `core/engine.py` | `asyncio.gather` under a semaphore; per-provider `wait_for` timeout. |
 | Normalize | `core/normalize.py` | URL / identifier dedupe, `product_key` for cross-seller history, fuzzy relevance filter. |
-| Savings | `savings/*` | Each `SavingsSource.evaluate(offer, query, profile)` returns adjustments. Stack rules (one card, one portal, one promo unless stackable) applied in the ranker. |
+| Savings | `savings/*` | Each `SavingsSource.evaluate(offer, query, profile)` returns adjustments: coupons, signup offers, rental-code sweep, memberships, cashback portals, card rewards. Stack rules (one card, one portal, one promo unless stackable) applied in the ranker. |
 | Rank | `core/ranking.py` | Expected effective price + dollar-equivalent penalties (distance, seller risk, stock uncertainty). Also yields a guaranteed price. |
 | Persist | `storage/` | SQLAlchemy; SQLite by default, Postgres via `pricefinder[postgres]`. |
 
@@ -31,7 +31,7 @@
 
 | kind | meaning | examples |
 |---|---|---|
-| api | official keyed API | eBay Browse, SerpApi |
+| api | official keyed API | eBay Browse, Best Buy, Walmart affiliate, SerpApi |
 | scrape | HTML / RSS parsing | Craigslist |
 | browser | headless browser, usually through the user's own session | Facebook Marketplace, car rental OTAs |
 | local | nearby in-store stock & price | retailer store-availability endpoints |

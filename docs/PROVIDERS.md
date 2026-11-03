@@ -52,3 +52,22 @@ Rules of thumb:
 - Add a new setting to `config.Settings` for any credential and list it in `required_settings`; the provider is auto-skipped when it's missing.
 - Mark `opt_in = True` for sources whose terms forbid automated access; the engine will not call them unless explicitly requested.
 - Keep `typical_latency_s` honest so timeouts can be budgeted.
+
+## Agency-direct car rentals
+
+| Agency | Status | Notes |
+|---|---|---|
+| Sixt | live (`sixt`) | public booking funnel deep link; exact times honoured |
+| National | live (`national`) | home-page widget driven end to end, then "Continue as Guest"; Est. Total includes taxes and fees |
+| Alamo, Enterprise | blocked | same platform as National; both answer automated sessions with a generic error after submit. Their deep links with dates prefilled are generated anyway for a human to click |
+| Avis, Budget | blocked | "Access is temporarily restricted" security check after submit |
+| Hertz | blocked | serves an empty page shell to headless browsers |
+
+Kayak (`kayak_cars`) also carries agency-direct listings when an agency chooses to publish there.
+
+**Assisted mode.** Set `PF_BROWSER_HEADLESS=false` to run the browser adapters in a visible window. The tool
+drives the form as usual; if a site shows a security check you can complete it yourself and the adapter keeps
+going once prices appear. The tool never tries to defeat those checks on its own.
+
+Add `direct` (or "no third party sites", "agency-direct only") to a query to keep only sellers that fulfil the
+booking themselves.

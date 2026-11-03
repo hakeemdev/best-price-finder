@@ -1,3 +1,4 @@
+import asyncio
 import pytest
 
 from pricefinder.core.engine import SearchEngine
@@ -163,3 +164,37 @@ def test_direct_only_drops_otas_and_brokers():
     q = Query(raw="x", item="car", vertical=Vertical.CAR_RENTAL, attributes={"direct_only": True})
     assert [o.id for o in engine._filter(offers, q)] == ["hertz"]
     assert len(engine._filter(offers, Query(raw="x", item="car", vertical=Vertical.CAR_RENTAL))) == 4
+
+
+async def test_slow_browser_adapter_gets_latency_budget():
+    from decimal import Decimal
+
+    from pricefinder.config import Settings
+    from pricefinder.core.models import Money, ProviderKind, Seller, SellerType
+    from pricefinder.providers.base import Provider
+
+    class SlowProvider(Provider):
+        name = "slow"
+        kind = ProviderKind.MOCK
+        verticals = frozenset({Vertical.CAR_RENTAL})
+        typical_latency_s = 20.0  # budget = 60s even though the global timeout below is 0.05s
+
+        async def search(self, query, ctx):
+            assert ctx.timeout >= 60
+            await asyncio.sleep(0.2)
+            return [
+                Offer(
+                    id="slow-1",
+                    provider="slow",
+                    vertical=Vertical.CAR_RENTAL,
+                    title="car",
+                    seller=Seller(name="x", type=SellerType.DIRECT),
+                    base_price=Money(amount=Decimal("100")),
+                )
+            ]
+
+    registry = ProviderRegistry()
+    registry.register(SlowProvider())
+    engine = SearchEngine(registry, repository=None, settings=Settings(provider_timeout_seconds=0.05))
+    result = await engine.search(Query(raw="x", item="car", vertical=Vertical.CAR_RENTAL))
+    assert not result.providers_failed and len(result.offers) == 1

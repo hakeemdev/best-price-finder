@@ -118,7 +118,7 @@ class SixtDirectProvider(Provider):
             )
             return []
         url = funnel_url(branch, query)
-        async with browser_page() as page:
+        async with browser_page(headless=ctx.settings.browser_headless) as page:
             await page.goto(url, wait_until="domcontentloaded", timeout=45000)
             text = await wait_for_prices(page, min_prices=4, timeout_s=ctx.timeout - 10)
         days = max(query.dates.nights or 1, 1)

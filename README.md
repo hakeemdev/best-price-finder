@@ -67,6 +67,7 @@ pf search "flights SFO to JFK Dec 12 to Dec 19 for 2 adults"
 pf search "hotel in Chicago next weekend 2 rooms"
 pf search "rent a car from EWR from 11:30PM 11/4/26 to 11:30PM 11/10/26"   # live Kayak + Sixt
 pf search "rent a Toyota RAV4 from EWR at the airport from 11:30PM 11/4/26 to 11:30PM 11/10/26"
+pf search "rent a car from DFW direct from 11:30PM 11/4/26 to 11:30PM 11/10/26"   # agency-direct only (Sixt, National, Kayak direct listings)
 #   "at the airport" keeps only in-terminal pick-up; a make/model or class (SUV, van, luxury) filters the cars
 pf search "used macbook pro m3 under $1200" --json
 pf parse "..."                       # see how a query is interpreted

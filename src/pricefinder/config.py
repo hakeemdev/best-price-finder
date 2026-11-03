@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     rental_codes_path: str = "data/rental_codes.yaml"
     rental_locations_path: str = "data/rental_locations.yaml"
     browser_providers_enabled: bool = True  # headless-browser adapters (Sixt, Kayak); needs pricefinder[browser]
+    browser_headless: bool = True  # False = assisted mode: a visible window where you can pass a site's security check
     memberships_path: str = "data/memberships.yaml"
     local_radius_km: float = 40.0
 

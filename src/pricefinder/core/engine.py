@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 import logging
 from datetime import UTC, datetime
 
@@ -110,11 +111,14 @@ class SearchEngine:
         failures: dict[str, str] = {}
 
         async def run(p: Provider) -> list[Offer]:
+            # Browser adapters declare their typical latency; give them three times that before giving up.
+            budget = max(ctx.timeout, p.typical_latency_s * 3)
+            pctx = replace(ctx, timeout=budget)
             async with sem:
                 try:
-                    return await asyncio.wait_for(p.search(query, ctx), timeout=ctx.timeout)
+                    return await asyncio.wait_for(p.search(query, pctx), timeout=budget)
                 except TimeoutError:
-                    failures[p.name] = f"timed out after {ctx.timeout}s"
+                    failures[p.name] = f"timed out after {budget:g}s"
                 except Exception as exc:  # noqa: BLE001 - one bad provider must not sink the search
                     failures[p.name] = f"{type(exc).__name__}: {exc}"
                     log.exception("provider %s failed", p.name)

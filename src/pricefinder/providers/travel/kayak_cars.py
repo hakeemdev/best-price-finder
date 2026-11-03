@@ -197,7 +197,7 @@ class KayakCarsProvider(Provider):
         if not where:
             return []
         slug = self._known_slug(where, ctx.settings)
-        async with browser_page() as page:
+        async with browser_page(headless=ctx.settings.browser_headless) as page:
             if slug is None:
                 await page.goto(f"{_BASE}/cars", wait_until="domcontentloaded", timeout=45000)
                 slug = await self._resolve_slug(page, where)

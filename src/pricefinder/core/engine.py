@@ -20,6 +20,10 @@ from .registry import ProviderRegistry, default_registry
 log = logging.getLogger(__name__)
 
 
+# "Book direct": the merchant is the one fulfilling the sale (agency, airline, hotel, brand store), not a reseller.
+_DIRECT_SELLERS = frozenset({"direct", "retailer", "local_store"})
+
+
 class SearchEngine:
     def __init__(
         self,
@@ -133,6 +137,8 @@ class SearchEngine:
             if query.attributes.get("airport_pickup") and o.vertical.value == "car_rental" and not on_airport(o):
                 continue
             if o.vertical.value == "car_rental" and not matches_vehicle(o, query):
+                continue
+            if query.attributes.get("direct_only") and o.seller.type.value not in _DIRECT_SELLERS:
                 continue
             out.append(o)
         return out

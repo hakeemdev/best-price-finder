@@ -61,6 +61,7 @@ def test_airport_pickup_constraint_detected_and_stripped():
     assert q.destination and q.destination.iata == "EWR"
     plain = p.parse("rent a car from EWR 11/4/26 to 11/10/26", today=TODAY)
     assert "airport_pickup" not in plain.attributes
+    assert plain.destination and plain.destination.iata == "EWR"  # dates right after the location must not hide it
 
 
 def test_car_rental_model_request_sets_model_and_infers_class():
@@ -80,3 +81,17 @@ def test_car_rental_model_request_sets_model_and_infers_class():
     assert cls_only.model is None and cls_only.vehicle_class == "suv"
     noise = p.parse("rental car in Denver 2027-01-03 to 2027-01-10 unlimited miles", today=TODAY)
     assert noise.model is None  # leftover words never become a model filter
+
+
+def test_direct_only_constraint():
+    for text in (
+        "rent a car from DFW direct 11/4/26 to 11/10/26",
+        "rent a car from DFW 11/4/26 to 11/10/26 booked directly with the rental agency",
+        "rent a car from DFW 11/4/26 to 11/10/26 no third party sites",
+        "rent a car from DFW 11/4/26 to 11/10/26 agency-direct only",
+    ):
+        q = p.parse(text, today=TODAY)
+        assert q.attributes.get("direct_only") is True, text
+        assert q.vertical == Vertical.CAR_RENTAL and q.destination and q.destination.iata == "DFW", text
+        assert "direct" not in q.item.lower() and "third" not in q.item.lower(), text
+    assert "direct_only" not in p.parse("rent a car from DFW 11/4/26 to 11/10/26", today=TODAY).attributes

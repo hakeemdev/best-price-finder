@@ -32,6 +32,14 @@ _AIRPORT_PICKUP = re.compile(
     r"|\bairport (?:pickup|pick-up|counter|terminal)\b",
     re.IGNORECASE,
 )
+_DIRECT_ONLY = re.compile(
+    r"(?:\b(?:book(?:ing|ed)?\s+)?direct(?:ly)?\b"
+    r"(?:\s+(?:through|with|from)\s+(?:the\s+)?(?:car rental|rental(?:\s+(?:agency|company))?|agency|airline|hotel))?"
+    r"|\b(?:no|not through|without|skip(?:ping)?|avoid(?:ing)?)\s+(?:any\s+)?"
+    r"(?:third[- ]party|3rd[- ]party|brokers?|otas?|middle ?men|resellers?)(?:\s+(?:sites?|websites?|bookings?))?"
+    r"|\bagency[- ]direct\b)(?:\s+only)?",
+    re.IGNORECASE,
+)
 _TIME_TOKEN = re.compile(
     r"\b(\d{1,2})(?::(\d{2}))?\s*([ap]\.?m\.?)\b|\b([01]?\d|2[0-3]):([0-5]\d)\b(?!\s*[ap]m)", re.IGNORECASE
 )
@@ -140,7 +148,7 @@ class RuleBasedQueryParser:
         elif vertical in (Vertical.HOTEL, Vertical.CAR_RENTAL, Vertical.RESERVATION):
             self._parse_stay(q, text)
         else:
-            if m := _NEAR.search(text):
+            if m := _NEAR.search(self._scrub(text)):
                 q.location = self._loc(m.group("loc"))
             q.item = self._clean_item(text)
 
@@ -148,6 +156,8 @@ class RuleBasedQueryParser:
         q.pickup_time, q.dropoff_time = self._parse_times(text)
         if _AIRPORT_PICKUP.search(text):
             q.attributes["airport_pickup"] = True
+        if _DIRECT_ONLY.search(text):
+            q.attributes["direct_only"] = True
         q.one_way = "one way" in lowered or "one-way" in lowered
         for cabin in ("first", "business", "premium economy", "economy"):
             if cabin in lowered:
@@ -166,9 +176,15 @@ class RuleBasedQueryParser:
         return Vertical.GOODS
 
     @staticmethod
+    def _scrub(text: str) -> str:
+        """Drop dates, times and channel phrases so the location regex sees "from DFW to", not "from DFW 11/4/26"."""
+        return _DIRECT_ONLY.sub("", _TIME_TOKEN.sub("", _DATE_TOKEN.sub("", text)))
+
+    @staticmethod
     def _clean_item(text: str) -> str:
         cleaned = _DATE_TOKEN.sub("", text)
         cleaned = _AIRPORT_PICKUP.sub("", cleaned)
+        cleaned = _DIRECT_ONLY.sub("", cleaned)
         cleaned = _TIME_TOKEN.sub("", cleaned)
         cleaned = _PRICE.sub("", cleaned)
         cleaned = _NEAR.sub("", cleaned)
@@ -192,7 +208,7 @@ class RuleBasedQueryParser:
             q.item = f"{q.origin.iata or q.origin.text} -> {q.destination.iata or q.destination.text}"
 
     def _parse_stay(self, q: Query, text: str) -> None:
-        if m := _NEAR.search(text):
+        if m := _NEAR.search(self._scrub(text)):
             q.destination = self._loc(m.group("loc"))
             q.location = q.destination
         q.item = self._clean_item(text)
@@ -225,7 +241,8 @@ class RuleBasedQueryParser:
 
     @staticmethod
     def _loc(raw: str) -> Location:
-        raw = re.sub(r"\s+", " ", _NOISE_WORDS.sub("", _DATE_TOKEN.sub("", raw))).strip(" ,.-")
+        raw = _DIRECT_ONLY.sub("", _DATE_TOKEN.sub("", raw))
+        raw = re.sub(r"\s+", " ", _NOISE_WORDS.sub("", raw)).strip(" ,.-")
         iata = raw.upper() if re.fullmatch(r"[A-Za-z]{3}", raw) else None
         return Location(text=raw, iata=iata)
 

@@ -136,3 +136,30 @@ def test_vehicle_model_and_class_filters():
     assert [o.id for o in by_class] == ["kayak-rav4", "sixt-rav4", "choice", "unknown"]
     none = engine._filter(offers, Query(raw="x", item="car", vertical=Vertical.CAR_RENTAL))
     assert len(none) == 5
+
+
+def test_direct_only_drops_otas_and_brokers():
+    from decimal import Decimal
+
+    from pricefinder.core.models import Money, Seller, SellerType
+
+    def rental(oid, stype):
+        return Offer(
+            id=oid,
+            provider="t",
+            vertical=Vertical.CAR_RENTAL,
+            title="car",
+            seller=Seller(name=oid, type=stype),
+            base_price=Money(amount=Decimal("300")),
+        )
+
+    offers = [
+        rental("hertz", SellerType.DIRECT),
+        rental("priceline", SellerType.OTA),
+        rental("economybookings", SellerType.RESELLER),
+        rental("mystery", SellerType.UNKNOWN),
+    ]
+    engine = SearchEngine(ProviderRegistry(), repository=None)
+    q = Query(raw="x", item="car", vertical=Vertical.CAR_RENTAL, attributes={"direct_only": True})
+    assert [o.id for o in engine._filter(offers, q)] == ["hertz"]
+    assert len(engine._filter(offers, Query(raw="x", item="car", vertical=Vertical.CAR_RENTAL))) == 4

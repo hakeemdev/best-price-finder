@@ -71,3 +71,14 @@ going once prices appear. The tool never tries to defeat those checks on its own
 
 Add `direct` (or "no third party sites", "agency-direct only") to a query to keep only sellers that fulfil the
 booking themselves.
+
+## Places to stay
+
+| Source | Status | Notes |
+|---|---|---|
+| Airbnb (`airbnb`) | live | default page plus a second pass capped near the cheapest nightly rate (Airbnb has no price sort); listings quoted for a different number of nights are dropped; totals are before occupancy tax |
+| Booking.com (`booking_com`) | live | results sorted by price, "Load more" expanded; totals before taxes unless the card says otherwise |
+| Kayak stays | not yet | page renders; nightly vs total figures per card still need disambiguating |
+| Google Hotels (`google_hotels`) | needs `PF_SERPAPI_KEY` | |
+
+Example: `pf search "hotel or airbnb in Dallas, TX from 11/4/26 to 11/10/26 for 1 adult"`.

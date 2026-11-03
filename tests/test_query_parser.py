@@ -95,3 +95,13 @@ def test_direct_only_constraint():
         assert q.vertical == Vertical.CAR_RENTAL and q.destination and q.destination.iata == "DFW", text
         assert "direct" not in q.item.lower() and "third" not in q.item.lower(), text
     assert "direct_only" not in p.parse("rent a car from DFW 11/4/26 to 11/10/26", today=TODAY).attributes
+
+
+def test_place_to_stay_phrasing_is_a_hotel_search():
+    q = p.parse(
+        "look for a place to stay in Dallas, TX from 11/4/26 to 11/10/26 the cheapest - airbnb or wherever", today=TODAY
+    )
+    assert q.vertical == Vertical.HOTEL
+    assert q.destination and q.destination.text == "Dallas, TX"
+    assert q.dates and q.dates.start == date(2026, 11, 4) and q.dates.nights == 6
+    assert q.travelers.adults == 1

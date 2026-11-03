@@ -185,6 +185,18 @@ def _details(po) -> str:
             parts.append(f"${a['nightly']:.2f}/night")
         if a.get("hotel_class"):
             parts.append(f"{a['hotel_class']}-star")
+        if a.get("kind"):
+            parts.append(str(a["kind"]).lower())
+        if a.get("rating"):
+            parts.append(f"{a['rating']}/5 ({a.get('reviews') or 0} reviews)")
+        elif a.get("score"):
+            parts.append(f"{a['score']}/10 ({a.get('reviews') or 0} reviews)")
+        if a.get("distance"):
+            parts.append(str(a["distance"]))
+        if a.get("free_cancellation"):
+            parts.append("free cancellation")
+        if a.get("price_note"):
+            parts.append(str(a["price_note"]))
     return " · ".join(parts)
 
 

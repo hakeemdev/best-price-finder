@@ -45,13 +45,15 @@ _TIME_TOKEN = re.compile(
 )
 _QTY = re.compile(r"\b(\d+)\s*x\b|\bx\s*(\d+)\b", re.IGNORECASE)
 _NOISE_WORDS = re.compile(
-    r"\b(best price for|cheapest|price of|buy|find|deal on|deals on|rental cars?|car rentals?|rent a car|rent an?|rent|"
+    r"\b(best price for|cheapest|price of|buy|find|look for|deal on|deals on|rental cars?|car rentals?|rent a car|"
+    r"rent an?|rent|a place to stay|place to stay|somewhere to stay|or wherever|lodging|accommodation|"
     r"hotels? in|hotels?|flights?|airfare|reservation for|for \d+ (?:adults?|people|nights?|days?)|"
     r"\d+ (?:adults?|rooms?|kids?|children|nights?))\b",
     re.IGNORECASE,
 )
 _DANGLING = re.compile(
-    r"^(?:(?:to|from|at|in|on|for|and|a|an|the)\s+)+|(?:\s+(?:to|from|at|in|on|for|and|a|an|the))+$", re.IGNORECASE
+    r"^(?:(?:to|from|at|in|on|for|and|or|a|an|the)\s+)+|(?:\s+(?:to|from|at|in|on|for|and|or|a|an|the))+$",
+    re.IGNORECASE,
 )
 _CLASS_WORDS = re.compile(
     r"\b(?:economy|compact|mid-?size|intermediate|standard|full-?size|suv|luxury|premium|mini-?van|van|"
@@ -84,7 +86,23 @@ _DATE_TOKEN = re.compile(
 
 _VERTICAL_HINTS: dict[Vertical, tuple[str, ...]] = {
     Vertical.FLIGHT: ("flight", "flights", "airfare", "fly to", "flying to", "plane ticket", "round trip", "one way"),
-    Vertical.HOTEL: ("hotel", "hotels", "motel", "resort", "airbnb", "vrbo", "stay in", "room for", "nights in"),
+    Vertical.HOTEL: (
+        "hotel",
+        "hotels",
+        "motel",
+        "resort",
+        "airbnb",
+        "vrbo",
+        "hostel",
+        "stay in",
+        "stay near",
+        "place to stay",
+        "somewhere to stay",
+        "lodging",
+        "accommodation",
+        "room for",
+        "nights in",
+    ),
     Vertical.CAR_RENTAL: (
         "rental car",
         "car rental",

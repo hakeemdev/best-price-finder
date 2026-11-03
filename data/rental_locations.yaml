@@ -3,5 +3,7 @@
 # results URL; unknown airports are resolved live through Kayak's location lookup and cached here.
 sixt:
   EWR: 45429   # Newark Int Airport
+  DFW: 40796   # Dallas/Fort Worth Int Airport (2500 S Garage Dr)
 kayak:
   EWR: EWR-a8252
+  DFW: DFW-a16406   # Dallas/Fort Worth Int Airport (ctid 16406; DAL Love Field shares it)

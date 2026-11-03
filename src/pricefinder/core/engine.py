@@ -12,7 +12,7 @@ from ..savings import SavingsSource, default_sources
 from ..storage.repository import Repository
 from .llm_parser import build_parser
 from .models import Offer, PricedOffer, ProviderKind, Query, SearchResult, UserProfile
-from .normalize import dedupe, matches_query, on_airport, product_key
+from .normalize import dedupe, matches_query, matches_vehicle, on_airport, product_key
 from .query import QueryParser
 from .ranking import Ranker
 from .registry import ProviderRegistry, default_registry
@@ -131,6 +131,8 @@ class SearchEngine:
             if query.vertical.value == "goods" and not matches_query(o.title, query.item):
                 continue
             if query.attributes.get("airport_pickup") and o.vertical.value == "car_rental" and not on_airport(o):
+                continue
+            if o.vertical.value == "car_rental" and not matches_vehicle(o, query):
                 continue
             out.append(o)
         return out

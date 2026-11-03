@@ -11,7 +11,7 @@ import re
 
 from rapidfuzz import fuzz
 
-from .models import Offer
+from .models import Offer, Query
 
 _STRONG_IDS = ("upc", "ean", "gtin", "asin", "isbn")
 
@@ -66,6 +66,40 @@ def matches_query(title: str, item: str, threshold: int = 55) -> bool:
 
 _ON_AIRPORT = re.compile(r"airport terminal|in[- ]terminal|on[- ]airport|airport counter|airport branch", re.I)
 _OFF_AIRPORT = re.compile(r"shuttle|call for pick-?up|off[- ]airport|meet and greet|delivery|downtown|hotel", re.I)
+
+
+_CLASS_ALIASES = {
+    "suv": ("suv",),
+    "van": ("van", "minivan"),
+    "truck": ("truck", "pickup"),
+    "luxury": ("luxury", "premium", "elite"),
+    "convertible": ("convertible",),
+    "economy": ("economy", "mini"),
+    "compact": ("compact",),
+    "midsize": ("midsize", "mid-size", "intermediate"),
+}
+
+
+def _squash(text: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", text.lower())
+
+
+def matches_vehicle(offer: Offer, query: Query) -> bool:
+    """Car-rental offers must match a requested model ("Toyota RAV4") or class ("suv") when one is given."""
+    attrs = offer.attributes
+    car = str(attrs.get("car") or attrs.get("model") or "")
+    if query.model:
+        if attrs.get("supplier_choice") or not car:
+            return False
+        have = _squash(car)
+        tokens = [t for t in re.split(r"[\s-]+", query.model) if t]
+        return _squash(query.model) in have or all(_squash(t) in have for t in tokens)
+    if query.vehicle_class:
+        cls = " ".join(str(attrs.get(k) or "") for k in ("vehicle_class", "body")).lower()
+        if cls.strip():
+            aliases = _CLASS_ALIASES.get(query.vehicle_class.lower(), (query.vehicle_class.lower(),))
+            return any(a in cls for a in aliases)
+    return True
 
 
 def on_airport(offer: Offer) -> bool:

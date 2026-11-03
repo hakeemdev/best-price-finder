@@ -66,6 +66,8 @@ Keys you may want (free tiers exist for all of them):
 pf search "flights SFO to JFK Dec 12 to Dec 19 for 2 adults"
 pf search "hotel in Chicago next weekend 2 rooms"
 pf search "rent a car from EWR from 11:30PM 11/4/26 to 11:30PM 11/10/26"   # live Kayak + Sixt
+pf search "rent a Toyota RAV4 from EWR at the airport from 11:30PM 11/4/26 to 11:30PM 11/10/26"
+#   "at the airport" keeps only in-terminal pick-up; a make/model or class (SUV, van, luxury) filters the cars
 pf search "used macbook pro m3 under $1200" --json
 pf parse "..."                       # see how a query is interpreted
 pf history "wh-1000xm5"              # prices seen in past searches

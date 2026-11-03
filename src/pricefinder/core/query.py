@@ -37,11 +37,36 @@ _TIME_TOKEN = re.compile(
 )
 _QTY = re.compile(r"\b(\d+)\s*x\b|\bx\s*(\d+)\b", re.IGNORECASE)
 _NOISE_WORDS = re.compile(
-    r"\b(best price for|cheapest|price of|buy|find|deal on|deals on|rental cars?|car rentals?|rent a car|"
+    r"\b(best price for|cheapest|price of|buy|find|deal on|deals on|rental cars?|car rentals?|rent a car|rent an?|rent|"
     r"hotels? in|hotels?|flights?|airfare|reservation for|for \d+ (?:adults?|people|nights?|days?)|"
     r"\d+ (?:adults?|rooms?|kids?|children|nights?))\b",
     re.IGNORECASE,
 )
+_DANGLING = re.compile(
+    r"^(?:(?:to|from|at|in|on|for|and|a|an|the)\s+)+|(?:\s+(?:to|from|at|in|on|for|and|a|an|the))+$", re.IGNORECASE
+)
+_CLASS_WORDS = re.compile(
+    r"\b(?:economy|compact|mid-?size|intermediate|standard|full-?size|suv|luxury|premium|mini-?van|van|"
+    r"pickup truck|truck|convertible)\b",
+    re.IGNORECASE,
+)
+_MAKES = re.compile(
+    r"\b(?:toyota|honda|nissan|hyundai|kia|ford|chevrolet|chevy|gmc|jeep|dodge|chrysler|ram|mazda|subaru|volkswagen|vw|"
+    r"bmw|mercedes|audi|lexus|tesla|mini|mitsubishi|buick|cadillac|lincoln|volvo|infiniti|acura|genesis|porsche|"
+    r"jaguar|land rover|range rover|fiat|alfa romeo|polestar|rivian)\b",
+    re.IGNORECASE,
+)
+# Well-known models -> rental class, matched on a squashed ("rav 4" == "rav4") lowercase query. Names that are
+# also places or common words (Tahoe, Taos, Kona, Colorado, Explorer, ...) are deliberately left out.
+_MODEL_CLASSES: dict[str, str] = {
+    "suv": (
+        "rav4 crv hrv rogue murano pathfinder armada cx5 cx30 cx50 cx9 cx90 equinox traverse blazer trailblazer "
+        "tucson palisade sportage sorento telluride seltos tiguan bronco highlander 4runner sequoia corollacross "
+        "venza landcruiser forester crosstrek wrangler renegade countryman bmwx1 bmwx3 bmwx5 audiq5 audiq7"
+    ),
+    "van": "sienna odyssey pacifica sprinter",
+    "truck": "f150 f250 silverado tundra ram1500 maverick gladiator",
+}
 _DATE_TOKEN = re.compile(
     r"\b(?:\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}(?:/\d{2,4})?|"
     r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+\d{4})?)\b"
@@ -56,9 +81,14 @@ _VERTICAL_HINTS: dict[Vertical, tuple[str, ...]] = {
         "rental car",
         "car rental",
         "rent a car",
+        "rent a ",
+        "rent an ",
         "hertz",
         "avis",
         "enterprise",
+        "sixt",
+        "alamo",
+        "thrifty",
         "turo",
         "suv rental",
     ),
@@ -147,7 +177,8 @@ class RuleBasedQueryParser:
             for h in hints:
                 cleaned = re.sub(rf"\b{re.escape(h)}\b", "", cleaned, flags=re.IGNORECASE)
         cleaned = _NOISE_WORDS.sub("", cleaned)
-        return re.sub(r"\s+", " ", cleaned).strip(" ,.-")
+        cleaned = re.sub(r"\s+", " ", cleaned).strip(" ,.-")
+        return _DANGLING.sub("", cleaned).strip(" ,.-")
 
     def _parse_flight(self, q: Query, text: str) -> None:
         if m := _ROUTE.search(text):
@@ -167,10 +198,30 @@ class RuleBasedQueryParser:
         q.item = self._clean_item(text)
         if q.destination and (not q.item or q.item.lower() in ("in", "to", "near")):
             q.item = q.destination.text or ""
-        for cls in ("economy", "compact", "midsize", "suv", "luxury", "van", "truck", "convertible"):
+        for cls in ("economy", "compact", "midsize", "suv", "luxury", "minivan", "van", "truck", "convertible"):
             if re.search(rf"\b{cls}\b", text, re.IGNORECASE):
-                q.vehicle_class = cls
+                q.vehicle_class = "van" if cls == "minivan" else cls
                 break
+        if q.vertical == Vertical.CAR_RENTAL:
+            self._parse_vehicle(q, text)
+
+    @staticmethod
+    def _parse_vehicle(q: Query, text: str) -> None:
+        """A known make/model ("rent a Toyota RAV4") becomes a model filter; infer its class when unstated."""
+        dest = (q.destination.text if q.destination else "").lower()
+        model = re.sub(r"\s+", " ", _CLASS_WORDS.sub("", q.item)).strip(" ,.-")
+        squashed_model = re.sub(r"[^a-z0-9]", "", model.lower())
+        make = _MAKES.search(model)
+        known = make or any(m in squashed_model for models in _MODEL_CLASSES.values() for m in models.split())
+        if model and known and model.lower() != dest:
+            q.model = model
+            q.brand = make.group(0).title() if make else None
+        if q.vehicle_class is None:
+            squashed = re.sub(r"[^a-z0-9]", "", text.lower())
+            for cls, models in _MODEL_CLASSES.items():
+                if any(m in squashed for m in models.split()):
+                    q.vehicle_class = cls
+                    break
 
     @staticmethod
     def _loc(raw: str) -> Location:

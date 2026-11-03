@@ -48,6 +48,8 @@ _AGENCIES = (
     "zezgo",
 )
 _MAX_CARDS = 300
+# Kayak's `fs=carclass=` filter only understands these values (Economy/Compact/... are ignored by the page).
+_CLASS_FILTERS = {"suv": "SUV", "luxury": "Luxury", "van": "Van", "convertible": "Convertible"}
 _SCORE = re.compile(r"offer from (?P<provider>.+?) has a score of (?P<score>[\d.]+)", re.I)
 _MONEY = re.compile(r"\$\s?(\d{1,5}(?:,\d{3})*(?:\.\d{2})?)")
 
@@ -131,7 +133,10 @@ def results_url(slug: str, query: Query) -> str:
     assert query.dates and query.dates.end
     pu = (query.pickup_time or time(12, 0)).hour
     do = (query.dropoff_time or query.pickup_time or time(12, 0)).hour
-    return f"{_BASE}/cars/{slug}/{query.dates.start.isoformat()}-{pu}h/{query.dates.end.isoformat()}-{do}h?sort=price_a"
+    url = f"{_BASE}/cars/{slug}/{query.dates.start.isoformat()}-{pu}h/{query.dates.end.isoformat()}-{do}h?sort=price_a"
+    if query.vehicle_class and (cls := _CLASS_FILTERS.get(query.vehicle_class.lower())):
+        url += f"&fs=carclass={cls}"
+    return url
 
 
 class KayakCarsProvider(Provider):
@@ -201,7 +206,8 @@ class KayakCarsProvider(Provider):
                     return []
             url = results_url(slug, query)
             await page.goto(url, wait_until="domcontentloaded", timeout=45000)
-            await wait_for_prices(page, min_prices=20, timeout_s=max(ctx.timeout - 15, 20), settle_s=5.0)
+            min_prices = 5 if "fs=carclass" in url else 20  # class-filtered lists can be short
+            await wait_for_prices(page, min_prices=min_prices, timeout_s=max(ctx.timeout - 15, 20), settle_s=5.0)
             # Results keep streaming in for a bit; give the page a moment after the first batch.
             stable = 0
             last = -1

@@ -36,3 +36,7 @@ def test_results_url_uses_hour_granularity_and_known_slug():
     slug = p._known_slug("ewr", Settings())
     assert slug == "EWR-a8252"
     assert results_url(slug, q) == "https://www.kayak.com/cars/EWR-a8252/2026-11-04-23h/2026-11-10-23h?sort=price_a"
+    q.vehicle_class = "suv"
+    assert results_url(slug, q).endswith("?sort=price_a&fs=carclass=SUV")
+    q.vehicle_class = "compact"  # not a Kayak URL filter; filtered client-side instead
+    assert results_url(slug, q).endswith("?sort=price_a")

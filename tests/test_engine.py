@@ -100,3 +100,39 @@ def test_airport_pickup_filter_keeps_only_terminal_offers():
     q = Query(raw="x", item="car", vertical=Vertical.CAR_RENTAL, attributes={"airport_pickup": True})
     kept = engine._filter([rental("Airport terminal", "a"), rental("Shuttle", "d"), rental(None, "e")], q)
     assert [o.id for o in kept] == ["a"]
+
+
+def test_vehicle_model_and_class_filters():
+    from decimal import Decimal
+
+    from pricefinder.core.models import Money, Seller, SellerType
+
+    def rental(oid, **attrs):
+        return Offer(
+            id=oid,
+            provider="t",
+            vertical=Vertical.CAR_RENTAL,
+            title="car",
+            seller=Seller(name="x", type=SellerType.OTA),
+            base_price=Money(amount=Decimal("300")),
+            attributes=attrs,
+        )
+
+    offers = [
+        rental("kayak-rav4", car="Toyota RAV4", vehicle_class="Intermediate SUV"),
+        rental("sixt-rav4", model="Toyota Rav4 Awd", vehicle_class="Intermediate", body="suv"),
+        rental("accent", car="Hyundai Accent", vehicle_class="Compact"),
+        rental("choice", car="Supplier choice", vehicle_class=None, supplier_choice=True),
+        rental("unknown"),
+    ]
+    engine = SearchEngine(ProviderRegistry(), repository=None)
+    by_model = engine._filter(
+        offers, Query(raw="x", item="Toyota RAV4", vertical=Vertical.CAR_RENTAL, model="Toyota RAV4")
+    )
+    assert [o.id for o in by_model] == ["kayak-rav4", "sixt-rav4"]
+    loose = engine._filter(offers, Query(raw="x", item="rav 4", vertical=Vertical.CAR_RENTAL, model="rav 4"))
+    assert [o.id for o in loose] == ["kayak-rav4", "sixt-rav4"]
+    by_class = engine._filter(offers, Query(raw="x", item="suv", vertical=Vertical.CAR_RENTAL, vehicle_class="suv"))
+    assert [o.id for o in by_class] == ["kayak-rav4", "sixt-rav4", "choice", "unknown"]
+    none = engine._filter(offers, Query(raw="x", item="car", vertical=Vertical.CAR_RENTAL))
+    assert len(none) == 5

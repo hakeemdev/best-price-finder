@@ -61,3 +61,22 @@ def test_airport_pickup_constraint_detected_and_stripped():
     assert q.destination and q.destination.iata == "EWR"
     plain = p.parse("rent a car from EWR 11/4/26 to 11/10/26", today=TODAY)
     assert "airport_pickup" not in plain.attributes
+
+
+def test_car_rental_model_request_sets_model_and_infers_class():
+    q = p.parse("rent a Toyota RAV4 from EWR at the airport from 11:30PM 11/4/26 to 11:30PM 11/10/26", today=TODAY)
+    assert q.vertical == Vertical.CAR_RENTAL
+    assert q.model == "Toyota RAV4" and q.brand == "Toyota"
+    assert q.vehicle_class == "suv"
+    assert q.item == "Toyota RAV4"
+    assert q.destination and q.destination.iata == "EWR"
+    assert q.attributes.get("airport_pickup") is True
+    assert q.dates and q.dates.start == date(2026, 11, 4) and q.dates.end == date(2026, 11, 10)
+    loose = p.parse("rent a rav 4 from EWR 11/4/26 to 11/10/26", today=TODAY)
+    assert loose.vertical == Vertical.CAR_RENTAL and loose.vehicle_class == "suv" and loose.model == "rav 4"
+    generic = p.parse("rent a car from EWR 11/4/26 to 11/10/26", today=TODAY)
+    assert generic.model is None and generic.vehicle_class is None
+    cls_only = p.parse("rent an SUV from EWR 11/4/26 to 11/10/26", today=TODAY)
+    assert cls_only.model is None and cls_only.vehicle_class == "suv"
+    noise = p.parse("rental car in Denver 2027-01-03 to 2027-01-10 unlimited miles", today=TODAY)
+    assert noise.model is None  # leftover words never become a model filter
